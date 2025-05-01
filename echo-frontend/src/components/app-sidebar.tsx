@@ -42,7 +42,7 @@ const items = [
 
 export function AppSidebar() {
   return (
-    <Sidebar>
+    <Sidebar className="bg-sidebar text-sidebar-foreground">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Echo</SidebarGroupLabel>
