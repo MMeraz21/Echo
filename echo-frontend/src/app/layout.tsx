@@ -6,6 +6,7 @@ import { Geist } from "next/font/google";
 import { TRPCReactProvider } from "@/trpc/react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { AppHeader } from "./_components/app-header";
 
 export const metadata: Metadata = {
   title: "Echo",
@@ -28,7 +29,8 @@ export default function RootLayout({
           <SidebarProvider>
             <AppSidebar />
             <main className="flex-1">
-              <SidebarTrigger />
+              {/* <SidebarTrigger /> */}
+              <AppHeader />
               {children}
             </main>
           </SidebarProvider>
