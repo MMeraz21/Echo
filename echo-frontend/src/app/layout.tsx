@@ -28,13 +28,16 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable} dark`}>
-      <body className="flex min-h-screen">
+      <body className="bg-sidebar flex min-h-screen text-white">
         <TRPCReactProvider>
           <SidebarProvider>
             <AppSidebar variant="inset" />
             <SidebarInset>
-              <AppHeader />
-              {children}
+              {/* Main container with rounded border */}
+              <div className="bg-background border-border flex min-h-screen flex-col overflow-hidden rounded-tl-xl rounded-bl-xl border-l shadow-sm">
+                <AppHeader />
+                <main className="flex flex-1 flex-col">{children}</main>
+              </div>
             </SidebarInset>
           </SidebarProvider>
         </TRPCReactProvider>
