@@ -6,6 +6,7 @@ import {
   Settings,
   VideoIcon,
 } from "lucide-react";
+import Link from "next/link";
 
 import {
   SidebarMenu,
@@ -26,10 +27,10 @@ export function NavMain() {
       {navItems.map((item) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton asChild>
-            <a href={item.url}>
+            <Link href={item.url} className="flex items-center gap-2">
               <item.icon className="h-4 w-4" />
               <span>{item.title}</span>
-            </a>
+            </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
       ))}
