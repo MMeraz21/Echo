@@ -1,4 +1,11 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+import {
+  Calendar,
+  Home,
+  Inbox,
+  Search,
+  Settings,
+  VideoIcon,
+} from "lucide-react";
 
 import {
   SidebarMenu,
@@ -7,9 +14,10 @@ import {
 } from "@/components/ui/sidebar";
 
 const navItems = [
-  { title: "Home", url: "#", icon: Home },
+  { title: "Home", url: "/", icon: Home },
   { title: "Inbox", url: "#", icon: Inbox },
   { title: "Calendar", url: "#", icon: Calendar },
+  { title: "Video Chat", url: "/video-chat", icon: VideoIcon },
 ];
 
 export function NavMain() {

@@ -30,7 +30,7 @@ export function AppSidebar(props: SidebarProps) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="#">
-                <ArrowUpCircleIcon className="h-5 w-5" />
+                {/* <ArrowUpCircleIcon className="h-5 w-5" /> */}
                 <span className="text-base font-semibold">Echo</span>
               </a>
             </SidebarMenuButton>
