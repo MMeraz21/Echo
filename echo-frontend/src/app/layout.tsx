@@ -4,7 +4,11 @@ import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "@/trpc/react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  SidebarInset,
+} from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "./_components/app-header";
 
@@ -27,12 +31,11 @@ export default function RootLayout({
       <body className="flex min-h-screen">
         <TRPCReactProvider>
           <SidebarProvider>
-            <AppSidebar />
-            <main className="flex-1">
-              {/* <SidebarTrigger /> */}
+            <AppSidebar variant="inset" />
+            <SidebarInset>
               <AppHeader />
               {children}
-            </main>
+            </SidebarInset>
           </SidebarProvider>
         </TRPCReactProvider>
       </body>

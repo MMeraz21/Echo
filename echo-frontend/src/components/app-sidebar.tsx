@@ -45,7 +45,9 @@ export function AppSidebar() {
     <Sidebar className="bg-sidebar text-sidebar-foreground">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Echo</SidebarGroupLabel>
+          <SidebarGroupLabel className="flex justify-center">
+            Echo
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
