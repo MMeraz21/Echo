@@ -1,9 +1,15 @@
-"use client";
+import { use } from "react";
 
-export default function VideoChatRoom({ params }: { params: { id: string } }) {
+export default function VideoChatRoom({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const resolvedParams = use(params);
+
   return (
     <div className="bg-background text-foreground flex min-h-screen flex-col items-center justify-center p-8">
-      <h1 className="mb-4 text-2xl font-bold">Lobby ID: {params.id}</h1>
+      <h1 className="mb-4 text-2xl font-bold">Lobby ID: {resolvedParams.id}</h1>
       <p className="text-muted-foreground mb-8">
         You&apos;re in the lobby. Waiting for others to join...
       </p>
