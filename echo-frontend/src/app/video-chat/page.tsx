@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function VideoChatHome() {
   return (
     <div className="bg-background text-foreground flex min-h-screen flex-col items-center justify-center space-y-8 px-4 py-16">
@@ -9,12 +11,12 @@ export default function VideoChatHome() {
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row">
-        <a
+        <Link
           href="/video-chat/host"
           className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-6 py-3 font-semibold transition"
         >
           Host a Lobby
-        </a>
+        </Link>
 
         <form
           action="/video-chat/join"
@@ -39,8 +41,8 @@ export default function VideoChatHome() {
 
       <div className="text-muted-foreground max-w-md pt-8 text-center text-sm">
         <p>
-          When you host a lobby, youll get a unique code to share. Anyone with
-          the code can join your call.
+          When you host a lobby, you&apos;ll get a unique code to share. Anyone
+          with the code can join your call.
         </p>
       </div>
     </div>
