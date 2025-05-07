@@ -1,3 +1,5 @@
+"use client";
+
 export default function VideoChatRoom({ params }: { params: { id: string } }) {
   return (
     <div className="bg-background text-foreground flex min-h-screen flex-col items-center justify-center p-8">
