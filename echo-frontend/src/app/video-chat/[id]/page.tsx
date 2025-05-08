@@ -9,7 +9,6 @@ export default function VideoChatRoom({
 
   return (
     <div className="bg-background text-foreground flex min-h-screen flex-col items-center justify-center p-8">
-      <h1 className="mb-4 text-2xl font-bold">Lobby ID: {resolvedParams.id}</h1>
       <p className="text-muted-foreground mb-8">
         You&apos;re in the lobby. Waiting for others to join...
       </p>
