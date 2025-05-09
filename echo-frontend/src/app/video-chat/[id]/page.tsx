@@ -1,3 +1,5 @@
+"use client";
+
 import { use, useEffect, useState } from "react";
 import "@livekit/components-styles";
 import { LiveKitRoom, VideoConference } from "@livekit/components-react";
