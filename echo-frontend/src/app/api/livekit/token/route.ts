@@ -9,19 +9,40 @@ interface RequestBody {
   participantName: string;
 }
 
-export async function POST(req: Request) {
-  const { roomName, participantName } = (await req.json()) as RequestBody;
+export async function POST(req: NextRequest) {
+  try {
+    const { roomName, participantName } = (await req.json()) as RequestBody;
 
-  const at = new AccessToken(API_KEY, API_SECRET, {
-    identity: participantName,
-  });
+    if (!roomName || !participantName) {
+      return NextResponse.json(
+        { error: "Missing roomName or participantName" },
+        { status: 400 },
+      );
+    }
 
-  at.addGrant({
-    roomJoin: true,
-    room: roomName,
-  });
+    const at = new AccessToken(API_KEY, API_SECRET, {
+      identity: participantName,
+    });
 
-  const token = at.toJwt();
+    at.addGrant({
+      roomJoin: true,
+      room: roomName,
+    });
 
-  return NextResponse.json({ token });
+    const token = await at.toJwt();
+
+    return NextResponse.json({ token });
+  } catch (error) {
+    console.error("Token generation error:", error);
+    console.error(
+      "Type of error caught:",
+      typeof error,
+      error instanceof Error ? error.message : "",
+    );
+
+    return NextResponse.json(
+      { error: "Failed to generate token" },
+      { status: 500 },
+    );
+  }
 }
