@@ -4,8 +4,13 @@ import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "@/trpc/react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  SidebarInset,
+} from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { AppHeader } from "./_components/app-header";
 
 export const metadata: Metadata = {
   title: "Echo",
@@ -23,14 +28,17 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable} dark`}>
-      <body className="flex min-h-screen">
+      <body className="bg-sidebar flex min-h-screen text-white">
         <TRPCReactProvider>
           <SidebarProvider>
-            <AppSidebar />
-            <main className="flex-1">
-              <SidebarTrigger />
-              {children}
-            </main>
+            <AppSidebar variant="inset" />
+            <SidebarInset>
+              {/* Main container with rounded border */}
+              <div className="bg-background border-border flex min-h-screen flex-col overflow-hidden rounded-xl border-l shadow-sm">
+                <AppHeader />
+                <main className="flex flex-1 flex-col">{children}</main>
+              </div>
+            </SidebarInset>
           </SidebarProvider>
         </TRPCReactProvider>
       </body>
