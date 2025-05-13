@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import "@livekit/components-styles";
 import { LiveKitRoom, VideoConference } from "@livekit/components-react";
 // import { createToken } from "@/lib/livekit";
+import { CustomVideoConference } from "@/components/video-conference/CustomVideoConference";
 
 interface TokenResponse {
   token: string;
@@ -62,7 +63,7 @@ export default function VideoChatRoom({
             audio={true}
             className="h-[400px] w-full"
           >
-            <VideoConference />
+            <CustomVideoConference />
           </LiveKitRoom>
         ) : (
           <div className="bg-muted flex h-[400px] w-full items-center justify-center rounded-lg text-sm">

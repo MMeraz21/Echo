@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@livekit/components-core':
+        specifier: ^0.12.4
+        version: 0.12.4(livekit-client@2.11.4)(tslib@2.8.1)
       '@livekit/components-react':
         specifier: ^2.9.3
         version: 2.9.3(livekit-client@2.11.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tslib@2.8.1)
