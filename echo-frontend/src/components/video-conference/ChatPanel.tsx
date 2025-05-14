@@ -79,17 +79,26 @@ export function ChatPanel({
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  // Combine the style prop with our own styles to ensure height is properly set
+  const containerStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
+    minHeight: "100%",
+    ...style,
+  };
+
   return (
     <div
-      className={`flex h-full flex-col border-l border-gray-700 bg-gray-900 ${className}`}
-      style={style}
+      className={`border-l border-gray-700 bg-gray-900 ${className}`}
+      style={containerStyle}
     >
       <div className="border-b border-gray-700 p-4">
         <h2 className="text-lg font-semibold text-white">Chat</h2>
       </div>
 
-      {/* Chat messages area */}
-      <div className="flex-grow overflow-y-auto p-4">
+      {/* Chat messages area - using flex-grow to expand */}
+      <div className="flex-1 overflow-y-auto p-4" style={{ minHeight: 0 }}>
         <div className="flex flex-col space-y-4">
           {displayMessages.map((message) => (
             <div

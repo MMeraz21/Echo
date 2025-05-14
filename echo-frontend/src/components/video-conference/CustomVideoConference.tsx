@@ -177,37 +177,32 @@ export function CustomVideoConference(): React.ReactElement {
     };
   }, [isDragging, handleDragMove, handleDragEnd]);
 
+  // Fixed width for the chat panel
+  const CHAT_PANEL_WIDTH = 320; // Reduced from 400px
+
   return (
-    <div className="flex h-full w-full">
-      {/* Main content with video and chat side by side */}
+    <div className="flex h-full w-full overflow-hidden">
+      {/* Main content with video */}
       <div
-        className="lk-video-conference relative flex h-full flex-col bg-black"
-        style={{ width: "calc(100% - 400px)" }} // Make video area narrower
+        className="lk-video-conference flex h-full flex-col bg-black"
+        style={{ width: `calc(100% - ${CHAT_PANEL_WIDTH}px)` }}
       >
-        {/* Remote participants */}
-        <div className="flex-grow">
-          {/* Use the original data that GridLayout expects */}
-          <GridLayout
-            tracks={tracksResult.filter((t) => {
-              // This performs the same filtering logic but keeps the original track objects
-              const track = t as unknown;
-              if (!isSafeTrack(track)) return false;
-              return !track.participant.isLocal;
-            })}
-            // Add custom styling for better video proportions with wider chat
-            className="h-full"
-            style={{
-              maxWidth: "1100px",
-              margin: "0 auto",
-              padding: "0.5rem",
-              height: "calc(100% - 2rem)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <ParticipantTile />
-          </GridLayout>
+        {/* Remote participants - flex-grow to take available space */}
+        <div className="flex min-h-0 flex-1 items-center justify-center">
+          {/* Container to limit video size */}
+          <div className="mx-auto w-full max-w-4xl px-4">
+            <GridLayout
+              tracks={tracksResult.filter((t) => {
+                // This performs the same filtering logic but keeps the original track objects
+                const track = t as unknown;
+                if (!isSafeTrack(track)) return false;
+                return !track.participant.isLocal;
+              })}
+              className="h-full"
+            >
+              <ParticipantTile />
+            </GridLayout>
+          </div>
 
           {/* Local video PiP - Draggable */}
           {localCam && showLocalCam && (
@@ -277,8 +272,10 @@ export function CustomVideoConference(): React.ReactElement {
         <ConnectionStateToast />
       </div>
 
-      {/* Chat panel as a separate component with its own state management */}
-      <ChatPanel style={{ width: "400px" }} />
+      {/* Chat panel with fixed width in its own container */}
+      <div className="h-full" style={{ width: `${CHAT_PANEL_WIDTH}px` }}>
+        <ChatPanel />
+      </div>
     </div>
   );
 }
