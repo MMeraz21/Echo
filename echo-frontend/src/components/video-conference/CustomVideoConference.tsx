@@ -190,7 +190,7 @@ export function CustomVideoConference(): React.ReactElement {
         {/* Remote participants - flex-grow to take available space */}
         <div className="flex min-h-0 flex-1 items-center justify-center">
           {/* Container to limit video size */}
-          <div className="mx-auto w-full max-w-4xl px-4">
+          <div className="mx-auto w-full max-w-3xl px-4">
             <GridLayout
               tracks={tracksResult.filter((t) => {
                 // This performs the same filtering logic but keeps the original track objects
@@ -199,6 +199,10 @@ export function CustomVideoConference(): React.ReactElement {
                 return !track.participant.isLocal;
               })}
               className="h-full"
+              style={{
+                maxHeight: "80%", // Limit the maximum height of videos
+                margin: "0 auto",
+              }}
             >
               <ParticipantTile />
             </GridLayout>

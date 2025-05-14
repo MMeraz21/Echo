@@ -14,7 +14,7 @@ export default function VideoLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`${geist.variable} h-screen w-full bg-black text-white`}>
+    <div className={`${geist.variable} h-full w-full bg-black text-white`}>
       {children}
     </div>
   );

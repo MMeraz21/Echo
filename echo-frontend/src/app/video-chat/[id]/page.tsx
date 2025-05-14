@@ -42,14 +42,14 @@ export default function VideoChatRoom({
 
   if (!token) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center">
         <div className="text-xl">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen w-full">
+    <div className="h-full w-full">
       {token ? (
         <LiveKitRoom
           token={token}
