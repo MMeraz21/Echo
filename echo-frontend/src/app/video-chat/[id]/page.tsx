@@ -49,9 +49,9 @@ export default function VideoChatRoom({
 
   return (
     <div className="bg-background text-foreground flex min-h-screen w-full flex-col items-center justify-center p-8">
-      <p className="text-muted-foreground mb-8">
+      {/* <p className="text-muted-foreground mb-8">
         You&apos;re in the lobby. Waiting for others to join...
-      </p>
+      </p> */}
 
       <div className="w-full max-w-4xl overflow-hidden rounded-lg">
         {token ? (
