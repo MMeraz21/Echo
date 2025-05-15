@@ -188,7 +188,7 @@ export function CustomVideoConference(): React.ReactElement {
         style={{ width: `calc(100% - ${CHAT_PANEL_WIDTH}px)` }}
       >
         {/* Remote participants - flex-grow to take available space */}
-        <div className="flex min-h-0 flex-1 items-center justify-center">
+        <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
           {/* Container to limit video size */}
           <div className="mx-auto w-full max-w-3xl px-4">
             <GridLayout
@@ -200,7 +200,7 @@ export function CustomVideoConference(): React.ReactElement {
               })}
               className="h-full"
               style={{
-                maxHeight: "80%", // Limit the maximum height of videos
+                maxHeight: "75%", // Reasonable size
                 margin: "0 auto",
               }}
             >
@@ -276,8 +276,14 @@ export function CustomVideoConference(): React.ReactElement {
         <ConnectionStateToast />
       </div>
 
-      {/* Chat panel with fixed width in its own container */}
-      <div className="h-full" style={{ width: `${CHAT_PANEL_WIDTH}px` }}>
+      {/* Chat panel with fixed width and height */}
+      <div
+        className="relative h-full overflow-hidden"
+        style={{
+          width: `${CHAT_PANEL_WIDTH}px`,
+          maxHeight: "100%",
+        }}
+      >
         <ChatPanel />
       </div>
     </div>

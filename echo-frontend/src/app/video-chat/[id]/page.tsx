@@ -49,7 +49,7 @@ export default function VideoChatRoom({
   }
 
   return (
-    <div className="h-full w-full">
+    <div className="flex h-full w-full overflow-hidden">
       {token ? (
         <LiveKitRoom
           token={token}
@@ -57,7 +57,7 @@ export default function VideoChatRoom({
           connect={true}
           video={true}
           audio={true}
-          className="h-full w-full"
+          className="h-full w-full overflow-hidden"
         >
           <CustomVideoConference />
         </LiveKitRoom>

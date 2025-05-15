@@ -79,26 +79,23 @@ export function ChatPanel({
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  // Combine the style prop with our own styles to ensure height is properly set
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-    minHeight: "100%",
-    ...style,
-  };
-
+  // Use absolute positioning for all internal elements to prevent growth
   return (
     <div
-      className={`border-l border-gray-700 bg-gray-900 ${className}`}
-      style={containerStyle}
+      className={`relative border-l border-gray-700 bg-gray-900 ${className}`}
+      style={{
+        height: "100%",
+        overflow: "hidden",
+        ...style,
+      }}
     >
-      <div className="border-b border-gray-700 p-4">
+      {/* Header - fixed at top */}
+      <div className="absolute top-0 right-0 left-0 z-10 border-b border-gray-700 p-4">
         <h2 className="text-lg font-semibold text-white">Chat</h2>
       </div>
 
-      {/* Chat messages area - using flex-grow to expand */}
-      <div className="flex-1 overflow-y-auto p-4" style={{ minHeight: 0 }}>
+      {/* Chat messages area - scrollable with absolute positioning */}
+      <div className="absolute top-[60px] right-0 bottom-[72px] left-0 overflow-y-auto p-4">
         <div className="flex flex-col space-y-4">
           {displayMessages.map((message) => (
             <div
@@ -128,8 +125,8 @@ export function ChatPanel({
         </div>
       </div>
 
-      {/* Message input area */}
-      <div className="border-t border-gray-700 p-4">
+      {/* Message input area - fixed at bottom */}
+      <div className="absolute right-0 bottom-0 left-0 border-t border-gray-700 p-4">
         <div className="flex items-center space-x-2">
           <input
             type="text"
