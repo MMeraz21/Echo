@@ -34,9 +34,11 @@ export default function RootLayout({
             <AppSidebar variant="inset" />
             <SidebarInset>
               {/* Main container with rounded border */}
-              <div className="bg-background border-border flex min-h-screen flex-col overflow-hidden rounded-xl border-l shadow-sm">
+              <div className="border-border bg-background flex h-full flex-col overflow-hidden rounded-xl border-l shadow-sm">
                 <AppHeader />
-                <main className="flex flex-1 flex-col">{children}</main>
+                <main className="flex flex-1 flex-col overflow-hidden">
+                  {children}
+                </main>
               </div>
             </SidebarInset>
           </SidebarProvider>

@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@livekit/components-core": "^0.12.4",
     "@livekit/components-react": "^2.9.3",
     "@livekit/components-styles": "^1.1.5",
     "@radix-ui/react-dialog": "^1.1.11",
