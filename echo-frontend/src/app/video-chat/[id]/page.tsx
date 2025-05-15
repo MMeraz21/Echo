@@ -49,7 +49,7 @@ export default function VideoChatRoom({
   }
 
   return (
-    <div className="flex h-full w-full overflow-hidden">
+    <div className="h-full w-full overflow-hidden">
       {token ? (
         <LiveKitRoom
           token={token}
