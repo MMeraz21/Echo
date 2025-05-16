@@ -1,6 +1,7 @@
 "use client";
-
+import { useLocalParticipant } from "@livekit/components-react";
 import React, { useState, useRef, useEffect } from "react";
+import { DataPacket_Kind, Room } from "livekit-client";
 
 // Chat message interface
 export interface ChatMessage {
