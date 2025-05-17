@@ -4,12 +4,25 @@ import React, { useState, useRef, useEffect } from "react";
 import { DataPacket_Kind, Room } from "livekit-client";
 
 // Chat message interface
-export interface ChatMessage {
+export interface BaseChatMessage {
   id: string;
   sender: string;
   text: string;
   timestamp: Date;
+  type: "chat" | "transcription";
 }
+
+export interface UserChatMessage extends BaseChatMessage {
+  type: "chat";
+  text: string;
+}
+
+export interface TranscriptionChatMessage extends BaseChatMessage {
+  type: "transcription";
+  text: string;
+}
+
+type ChatMessage = UserChatMessage | TranscriptionChatMessage;
 
 // Props for the ChatPanel component
 export interface ChatPanelProps {
@@ -38,6 +51,7 @@ export function ChatPanel({
       sender: "System",
       text: "Welcome to the chat! This is a demo chat interface.",
       timestamp: new Date(),
+      type: "chat",
     },
   ]);
 
@@ -68,6 +82,7 @@ export function ChatPanel({
           sender: "You", // In a real app, use the user's name
           text: messageInput.trim(),
           timestamp: new Date(),
+          type: "chat",
         },
       ]);
     }
