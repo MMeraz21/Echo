@@ -1,7 +1,7 @@
 "use client";
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import React, { useState, useRef, useEffect } from "react";
-import { DataPacket_Kind, Room } from "livekit-client";
+import { DataPacket_Kind, Room, Participant } from "livekit-client";
 
 // Chat message interface
 export interface BaseChatMessage {
@@ -24,6 +24,11 @@ export interface TranscriptionChatMessage extends BaseChatMessage {
 
 type ChatMessage = UserChatMessage | TranscriptionChatMessage;
 
+interface ChatData {
+  text: string;
+  timestamp: string;
+}
+
 // Props for the ChatPanel component
 export interface ChatPanelProps {
   className?: string;
@@ -41,11 +46,10 @@ export function ChatPanel({
   onSendMessage,
   messages = [],
 }: ChatPanelProps): React.ReactElement {
-  // Local state for the chat input
-  const [messageInput, setMessageInput] = useState("");
-
-  // Demo messages if none are provided
+  const [messageInput, setMessageInput] = useState(""); //chat input
+  const room = useRoomContext();
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([
+    //added demo message
     {
       id: "1",
       sender: "System",
@@ -54,6 +58,32 @@ export function ChatPanel({
       type: "chat",
     },
   ]);
+
+  useEffect(() => {
+    if (!room) return;
+
+    const handleData = (payload: Uint8Array, participant?: Participant) => {
+      const decoder = new TextDecoder();
+      const message = JSON.parse(decoder.decode(payload)) as ChatData;
+
+      setLocalMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          sender: participant?.identity ?? "Unknown",
+          text: message.text,
+          timestamp: new Date(message.timestamp),
+          type: "chat",
+        },
+      ]);
+    };
+
+    room.on("dataReceived", handleData);
+
+    return () => {
+      room.off("dataReceived", handleData);
+    };
+  }, [room]);
 
   // Determine which messages to display (props or local)
   const displayMessages = messages.length > 0 ? messages : localMessages;
@@ -68,24 +98,31 @@ export function ChatPanel({
 
   // Handle sending a new chat message
   const handleSendMessage = () => {
-    if (!messageInput.trim()) return;
+    if (!messageInput.trim() || !room) return;
 
-    // If parent component handles messages
-    if (onSendMessage) {
-      onSendMessage(messageInput.trim());
-    } else {
-      // Otherwise handle locally
-      setLocalMessages([
-        ...localMessages,
-        {
-          id: Date.now().toString(),
-          sender: "You", // In a real app, use the user's name
-          text: messageInput.trim(),
-          timestamp: new Date(),
-          type: "chat",
-        },
-      ]);
-    }
+    const message = {
+      text: messageInput.trim(),
+      timestamp: new Date().toISOString(),
+    };
+
+    // Send message through LiveKit's data channel
+    const encoder = new TextEncoder();
+    void room.localParticipant.publishData(
+      encoder.encode(JSON.stringify(message)),
+      { reliable: true },
+    );
+
+    // Add message to local state
+    setLocalMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        sender: "You",
+        text: messageInput.trim(),
+        timestamp: new Date(),
+        type: "chat",
+      },
+    ]);
 
     setMessageInput("");
   };

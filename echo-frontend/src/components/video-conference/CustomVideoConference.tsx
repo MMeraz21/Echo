@@ -14,7 +14,7 @@ import {
 } from "@livekit/components-react";
 import type { Participant, Track as TrackType } from "livekit-client";
 import { Track } from "livekit-client";
-import { ChatPanel, type ChatMessage } from "./ChatPanel";
+import { ChatPanel } from "./ChatPanel";
 
 // Type-safe wrapper for untyped track data
 interface SafeParticipant {
