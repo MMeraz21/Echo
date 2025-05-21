@@ -43,30 +43,13 @@ export function useTranscription() {
 
   const initGladiaSession = async () => {
     try {
-      const apiKey = process.env.NEXT_PUBLIC_GLADIA_API_KEY;
-      if (!apiKey) {
-        console.error("Gladia API key is missing");
-        return null;
-      }
-
-      const response = await fetch("https://api.gladia.io/v2/live", {
+      const response = await fetch("/api/gladia", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Gladia-Key": apiKey,
-        },
-        body: JSON.stringify({
-          encoding: "wav/pcm",
-          sample_rate: 16000,
-          bit_depth: 16,
-          channels: 1,
-        }),
       });
 
       if (!response.ok) {
-        console.error(
-          `Gladia init error: ${response.status}: ${await response.text()}`,
-        );
+        const error = await response.text();
+        console.error("Gladia init error:", error);
         return null;
       }
 
