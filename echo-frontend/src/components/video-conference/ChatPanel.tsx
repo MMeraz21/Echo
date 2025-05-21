@@ -2,7 +2,7 @@
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import React, { useState, useRef, useEffect } from "react";
 import { DataPacket_Kind, Room, Participant } from "livekit-client";
-
+import { useTranscription } from "@/hooks/useTranscription";
 // Chat message interface
 export interface BaseChatMessage {
   id: string;
@@ -48,6 +48,7 @@ export function ChatPanel({
 }: ChatPanelProps): React.ReactElement {
   const [messageInput, setMessageInput] = useState(""); //chat input
   const room = useRoomContext();
+  const { transcriptions } = useTranscription();
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([
     //added demo message
     {
@@ -58,6 +59,24 @@ export function ChatPanel({
       type: "chat",
     },
   ]);
+
+  useEffect(() => {
+    if (transcriptions.length > 0) {
+      const lastTranscription = transcriptions[transcriptions.length - 1];
+      if (typeof lastTranscription === "string") {
+        setLocalMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            sender: "Transcription",
+            text: lastTranscription,
+            timestamp: new Date(),
+            type: "transcription",
+          },
+        ]);
+      }
+    }
+  }, [transcriptions]);
 
   useEffect(() => {
     if (!room) return;
