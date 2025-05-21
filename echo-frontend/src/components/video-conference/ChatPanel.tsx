@@ -73,17 +73,23 @@ export function ChatPanel({
     useEffect(() => {
       if (transcriptions.length > 0) {
         const lastTranscription = transcriptions[transcriptions.length - 1];
-        if (typeof lastTranscription === "string") {
-          setLocalMessages((prev) => [
-            ...prev,
-            {
+        if (lastTranscription) {
+          console.log(
+            "ChatPanel - Adding new transcription to messages:",
+            lastTranscription,
+          );
+          setLocalMessages((prev) => {
+            const newMessage: TranscriptionChatMessage = {
               id: Date.now().toString(),
               sender: "Transcription",
               text: lastTranscription,
               timestamp: new Date(),
               type: "transcription",
-            },
-          ]);
+            };
+            console.log("ChatPanel - Current messages:", prev);
+            console.log("ChatPanel - Adding message:", newMessage);
+            return [...prev, newMessage];
+          });
         }
       }
     }, [transcriptions]);
