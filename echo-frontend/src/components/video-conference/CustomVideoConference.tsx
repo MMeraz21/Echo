@@ -16,6 +16,37 @@ import type { Participant, Track as TrackType } from "livekit-client";
 import { Track } from "livekit-client";
 import { ChatPanel } from "./ChatPanel";
 
+// Error boundary component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("ChatPanel Error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex h-full items-center justify-center bg-red-900/10 p-4 text-red-500">
+          <p>Error loading chat: {this.state.error?.message}</p>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 // Type-safe wrapper for untyped track data
 interface SafeParticipant {
   isLocal: boolean;
@@ -71,6 +102,8 @@ function createSafeTrackComponent(
 }
 
 export function CustomVideoConference(): React.ReactElement {
+  console.log("CustomVideoConference rendering");
+
   // Get tracks with proper typing to satisfy ESLint
   const tracksResult = useTracks([
     { source: Track.Source.Camera, withPlaceholder: true },
@@ -284,7 +317,26 @@ export function CustomVideoConference(): React.ReactElement {
           maxHeight: "100%",
         }}
       >
-        <ChatPanel />
+        {(() => {
+          console.log("About to render ChatPanel");
+          try {
+            return (
+              <ErrorBoundary>
+                <ChatPanel />
+              </ErrorBoundary>
+            );
+          } catch (error) {
+            console.error("Error rendering ChatPanel:", error);
+            return (
+              <div className="flex h-full items-center justify-center bg-red-900/10 p-4 text-red-500">
+                <p>
+                  Error loading chat:{" "}
+                  {error instanceof Error ? error.message : String(error)}
+                </p>
+              </div>
+            );
+          }
+        })()}
       </div>
     </div>
   );
