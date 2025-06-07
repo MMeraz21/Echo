@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useLocalParticipant } from "@livekit/components-react";
 
 declare global {
@@ -30,215 +30,141 @@ interface GladiaResponse {
   id: string;
 }
 
+type TranscriptionStatus = "IDLE" | "STARTING" | "STARTED" | "STOPPING";
+
 export function useTranscription() {
   const { isMicrophoneEnabled } = useLocalParticipant();
   const [transcriptions, setTranscriptions] = useState<string[]>([]);
-  const [ws, setWs] = useState<WebSocket | null>(null);
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-
+  const instanceIdRef = useRef(Math.random().toString(36).substring(7));
   console.log(
-    "useTranscription hook - isMicrophoneEnabled:",
-    isMicrophoneEnabled,
+    `[Transcription Hook] Instance ${instanceIdRef.current} created.`,
   );
+  const statusRef = useRef<TranscriptionStatus>("IDLE");
+  const resourcesRef = useRef<{
+    socket?: WebSocket;
+    stream?: MediaStream;
+    context?: AudioContext;
+    source?: MediaStreamAudioSourceNode;
+    processor?: AudioWorkletNode;
+  }>({});
 
-  const initGladiaSession = async () => {
-    try {
-      const response = await fetch("/api/gladia", {
-        method: "POST",
-      });
+  const stopTranscription = useCallback(() => {
+    if (statusRef.current === "IDLE" || statusRef.current === "STOPPING")
+      return;
 
-      if (!response.ok) {
-        const error = await response.text();
-        console.error("Gladia init error:", error);
-        return null;
+    console.log("Stopping transcription...");
+    statusRef.current = "STOPPING";
+
+    const { socket, stream, context, source, processor } = resourcesRef.current;
+
+    if (socket) {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: "stop" }));
       }
-
-      const data = (await response.json()) as GladiaResponse;
-      return data.url;
-    } catch (error) {
-      console.error("Error initializing Gladia session:", error);
-      return null;
+      socket.close();
     }
-  };
+    if (source) source.disconnect();
+    if (processor) processor.disconnect();
+    if (context && context.state !== "closed") void context.close();
+    if (stream) stream.getTracks().forEach((track) => track.stop());
 
-  const setupStream = useCallback(async () => {
-    console.log(
-      "setupStream called, isMicrophoneEnabled:",
-      isMicrophoneEnabled,
-    );
-    if (!isMicrophoneEnabled) {
-      console.log("Microphone is disabled in setupStream, returning early");
+    resourcesRef.current = {};
+    statusRef.current = "IDLE";
+    console.log("Transcription stopped and resources cleaned up.");
+  }, []);
+
+  const startTranscription = useCallback(async () => {
+    if (statusRef.current !== "IDLE") {
+      console.warn(`Cannot start, current status is: ${statusRef.current}`);
       return;
     }
 
+    console.log("Starting transcription...");
+    statusRef.current = "STARTING";
+
     try {
-      console.log("Setting up audio stream...");
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          sampleRate: 16000,
-          sampleSize: 16,
-        },
-        video: false,
+        audio: { channelCount: 1 },
       });
-      const audioTrack = stream.getAudioTracks()[0];
-      console.log("Got audio stream:", audioTrack?.label ?? "unknown track");
+      resourcesRef.current.stream = stream;
 
-      // Initialize Gladia session and get WebSocket URL
-      const wsUrl = await initGladiaSession();
-      if (!wsUrl) {
-        console.error("Failed to initialize Gladia session");
-        return;
-      }
+      const context = new (window.AudioContext || window.webkitAudioContext)();
+      resourcesRef.current.context = context;
+      if (context.state === "suspended") await context.resume();
 
-      console.log("Connecting to Gladia WebSocket...");
+      const response = await fetch("/api/gladia", { method: "POST" });
+      if (!response.ok) throw new Error(await response.text());
+      const gladiaData = (await response.json()) as GladiaResponse;
+      const wsUrl = gladiaData.url.replace("ws://", "wss://");
+
       const socket = new WebSocket(wsUrl);
+      resourcesRef.current.socket = socket;
 
       socket.onopen = () => {
-        console.log("Connected to Gladia WebSocket");
-        // Send initial configuration message
+        console.log("Gladia WebSocket connected.");
         socket.send(
           JSON.stringify({
             type: "start",
             sampling_rate: 16000,
-            encoding: "wav/pcm",
             language: "en",
           }),
         );
       };
 
-      socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-      };
-
-      socket.onclose = (event) => {
-        console.log("WebSocket closed:", {
-          code: event.code,
-          reason: event.reason,
-          wasClean: event.wasClean,
-        });
-      };
-
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data as string) as TranscriptionData;
-          console.log("Received Gladia message:", data);
-
-          switch (data.type) {
-            case "transcript":
-              const transcriptText = data.data?.utterance?.text;
-              if (transcriptText && !data.error) {
-                console.log("Adding new transcription:", transcriptText);
-                setTranscriptions((prev) => [...prev, transcriptText]);
-              }
-              break;
-            case "error":
-              console.error("Gladia transcription error:", data.error);
-              break;
-            case "audio_chunk":
-              console.log("Audio chunk acknowledged");
-              break;
-            default:
-              console.log("Unhandled message type:", data.type);
-          }
-        } catch (error) {
-          console.error("Error processing message from Gladia:", error);
+      socket.onmessage = (event: MessageEvent<string>) => {
+        const data = JSON.parse(event.data) as TranscriptionData;
+        const text = data.data?.utterance?.text;
+        if (data.type === "transcript" && text) {
+          setTranscriptions((prev) => [...prev, text]);
         }
       };
+      socket.onerror = (e) => console.error("Gladia WebSocket error:", e);
+      socket.onclose = () => console.log("Gladia WebSocket closed.");
 
-      // Create AudioContext with specific sample rate
-      const context = new (window.AudioContext || window.webkitAudioContext)({
-        sampleRate: 16000,
+      await context.audioWorklet.addModule("/audio-worklet-processor.js");
+      const processor = new AudioWorkletNode(context, "resampling-processor", {
+        processorOptions: {
+          targetSampleRate: 16000,
+        },
       });
-      console.log("Created AudioContext, state:", context.state);
-      setAudioContext(context);
+      resourcesRef.current.processor = processor;
 
-      // Resume AudioContext
-      if (context.state === "suspended") {
-        await context.resume();
-        console.log("AudioContext resumed, new state:", context.state);
-      }
+      processor.port.onmessage = (event: MessageEvent<Float32Array>) => {
+        if (socket.readyState !== WebSocket.OPEN) return;
+        const pcmData = new Int16Array(event.data.length);
+        for (let i = 0; i < event.data.length; i++) {
+          const sample = event.data[i] ?? 0;
+          pcmData[i] = Math.round(Math.max(-1, Math.min(1, sample)) * 32767);
+        }
+        const base64 = btoa(
+          String.fromCharCode(...new Uint8Array(pcmData.buffer)),
+        );
+        socket.send(
+          JSON.stringify({ type: "audio_chunk", data: { chunk: base64 } }),
+        );
+      };
 
       const source = context.createMediaStreamSource(stream);
-      const processor = context.createScriptProcessor(2048, 1, 1);
-      console.log("Created audio processor");
+      resourcesRef.current.source = source;
+      source.connect(processor).connect(context.destination);
 
-      processor.onaudioprocess = (event) => {
-        if (socket.readyState === WebSocket.OPEN) {
-          try {
-            const inputData = event.inputBuffer.getChannelData(0);
-            const pcmData = new Int16Array(inputData.length);
-
-            // Convert Float32 to Int16 with proper scaling
-            for (let i = 0; i < inputData.length; i++) {
-              // Clamp the value between -1 and 1
-              const float = Math.max(-1, Math.min(1, inputData[i] ?? 0));
-              // Convert to 16-bit integer
-              pcmData[i] = Math.round(float * 32767);
-            }
-
-            // Convert to base64
-            const buffer = pcmData.buffer;
-            const base64Data = btoa(
-              String.fromCharCode(...new Uint8Array(buffer)),
-            );
-
-            const message = {
-              type: "audio_chunk",
-              data: {
-                chunk: base64Data,
-              },
-            };
-            socket.send(JSON.stringify(message));
-          } catch (error) {
-            console.error("Error processing audio data:", error);
-          }
-        }
-      };
-
-      source.connect(processor);
-      processor.connect(context.destination);
-      console.log("Audio processing chain connected");
-      setWs(socket);
-
-      return () => {
-        console.log("Cleaning up audio stream...");
-        if (socket.readyState === WebSocket.OPEN) {
-          socket.send(JSON.stringify({ type: "stop" }));
-          socket.close(1000);
-        }
-        stream.getTracks().forEach((track) => {
-          console.log("Stopping track:", track.label);
-          track.stop();
-        });
-        source.disconnect();
-        processor.disconnect();
-        void context.close();
-      };
+      statusRef.current = "STARTED";
+      console.log("Transcription started successfully.");
     } catch (error) {
-      console.error("Error accessing microphone:", error);
+      console.error("Failed to start transcription:", error);
+      stopTranscription();
     }
-  }, [isMicrophoneEnabled]);
+  }, [stopTranscription]);
 
-  // Effect to handle stream setup
   useEffect(() => {
-    console.log(
-      "useTranscription effect triggered, isMicrophoneEnabled:",
-      isMicrophoneEnabled,
-    );
     if (isMicrophoneEnabled) {
-      console.log("Microphone is enabled, setting up stream...");
-      const cleanupPromise = setupStream();
-      return () => {
-        console.log("useTranscription cleanup");
-        if (cleanupPromise != null) {
-          void cleanupPromise.then((cleanupFn) => cleanupFn?.());
-        }
-      };
+      void startTranscription();
     } else {
-      console.log("Microphone is disabled, not setting up stream");
+      stopTranscription();
     }
-  }, [isMicrophoneEnabled, setupStream]);
+    // This cleanup runs when the component unmounts or deps change.
+    return stopTranscription;
+  }, [isMicrophoneEnabled, startTranscription, stopTranscription]);
 
   return { transcriptions };
 }
