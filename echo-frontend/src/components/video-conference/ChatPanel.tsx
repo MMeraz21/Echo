@@ -3,7 +3,8 @@ import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import React, { useState, useRef, useEffect } from "react";
 import { DataPacket_Kind, Room, Participant } from "livekit-client";
 import { useTranscription } from "@/hooks/useTranscription";
-// Chat message interface
+import { ChatMessage } from "./ChatMessage";
+
 export interface BaseChatMessage {
   id: string;
   sender: string;
@@ -189,30 +190,11 @@ export function ChatPanel({
         <div className="absolute top-[60px] right-0 bottom-[72px] left-0 overflow-y-auto p-4">
           <div className="flex flex-col space-y-4">
             {displayMessages.map((message) => (
-              <div
+              <ChatMessage
                 key={message.id}
-                className={`flex flex-col ${
-                  message.sender === "You" ? "items-end" : "items-start"
-                }`}
-              >
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs text-gray-400">
-                    {message.sender}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {formatTime(message.timestamp)}
-                  </span>
-                </div>
-                <div
-                  className={`mt-1 max-w-[85%] rounded-lg px-4 py-3 ${
-                    message.sender === "You"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-700 text-gray-100"
-                  }`}
-                >
-                  {message.text}
-                </div>
-              </div>
+                message={message}
+                formatTime={formatTime}
+              />
             ))}
             <div ref={chatEndRef} />
           </div>
