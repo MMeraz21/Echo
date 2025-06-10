@@ -3,32 +3,8 @@ import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import React, { useState, useRef, useEffect } from "react";
 import { DataPacket_Kind, Room, Participant } from "livekit-client";
 import { useTranscription } from "@/hooks/useTranscription";
-import { ChatMessage } from "./ChatMessage";
-
-export interface BaseChatMessage {
-  id: string;
-  sender: string;
-  text: string;
-  timestamp: Date;
-  type: "chat" | "transcription";
-}
-
-export interface UserChatMessage extends BaseChatMessage {
-  type: "chat";
-  text: string;
-}
-
-export interface TranscriptionChatMessage extends BaseChatMessage {
-  type: "transcription";
-  text: string;
-}
-
-type ChatMessage = UserChatMessage | TranscriptionChatMessage;
-
-interface ChatData {
-  text: string;
-  timestamp: string;
-}
+import { ChatMessage as ChatMessageComponent } from "./ChatMessage";
+import type { ChatMessage, ChatData, TranscriptionChatMessage } from "./types";
 
 export interface ChatPanelProps {
   className?: string;
@@ -65,6 +41,7 @@ export function ChatPanel({
         text: "Welcome to the chat! Click the microphone button to start transcription.",
         timestamp: new Date(),
         type: "chat",
+        translation: "",
       },
     ]);
     console.log("ChatPanel - after all hooks");
@@ -84,6 +61,7 @@ export function ChatPanel({
               text: lastTranscription,
               timestamp: new Date(),
               type: "transcription",
+              translation: "",
             };
             console.log("ChatPanel - Current messages:", prev);
             console.log("ChatPanel - Adding message:", newMessage);
@@ -108,6 +86,7 @@ export function ChatPanel({
             text: message.text,
             timestamp: new Date(message.timestamp),
             type: "transcription",
+            translation: "",
           },
         ]);
       };
@@ -149,6 +128,7 @@ export function ChatPanel({
           text: messageInput.trim(),
           timestamp: new Date(),
           type: "chat",
+          translation: "",
         },
       ]);
 
@@ -180,7 +160,7 @@ export function ChatPanel({
         <div className="absolute top-[60px] right-0 bottom-[72px] left-0 overflow-y-auto p-4">
           <div className="flex flex-col space-y-4">
             {displayMessages.map((message) => (
-              <ChatMessage
+              <ChatMessageComponent
                 key={message.id}
                 message={message}
                 formatTime={formatTime}

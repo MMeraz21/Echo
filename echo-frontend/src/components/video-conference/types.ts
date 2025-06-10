@@ -3,6 +3,7 @@ export interface BaseChatMessage {
   sender: string;
   text: string;
   timestamp: Date;
+  translation: string;
   type: "chat" | "transcription";
 }
 
