@@ -30,7 +30,6 @@ interface ChatData {
   timestamp: string;
 }
 
-// Props for the ChatPanel component
 export interface ChatPanelProps {
   className?: string;
   style?: React.CSSProperties;
@@ -60,7 +59,6 @@ export function ChatPanel({
     console.log("ChatPanel - transcriptions:", transcriptions);
 
     const [localMessages, setLocalMessages] = useState<ChatMessage[]>([
-      //added demo message
       {
         id: "1",
         sender: "System",
@@ -82,7 +80,7 @@ export function ChatPanel({
           setLocalMessages((prev) => {
             const newMessage: TranscriptionChatMessage = {
               id: Date.now().toString(),
-              sender: "Transcription",
+              sender: "You",
               text: lastTranscription,
               timestamp: new Date(),
               type: "transcription",
@@ -109,7 +107,7 @@ export function ChatPanel({
             sender: participant?.identity ?? "Unknown",
             text: message.text,
             timestamp: new Date(message.timestamp),
-            type: "chat",
+            type: "transcription",
           },
         ]);
       };
@@ -121,18 +119,14 @@ export function ChatPanel({
       };
     }, [room]);
 
-    // Determine which messages to display (props or local)
     const displayMessages = messages.length > 0 ? messages : localMessages;
 
-    // Ref for auto-scrolling to bottom
     const chatEndRef = useRef<HTMLDivElement>(null);
 
-    // Scroll to bottom of chat when messages change
     useEffect(() => {
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [displayMessages]);
 
-    // Handle sending a new chat message
     const handleSendMessage = () => {
       if (!messageInput.trim() || !room) return;
 
@@ -141,14 +135,12 @@ export function ChatPanel({
         timestamp: new Date().toISOString(),
       };
 
-      // Send message through LiveKit's data channel
-      const encoder = new TextEncoder();
+      const encoder = new TextEncoder(); //send message to livekit
       void room.localParticipant.publishData(
         encoder.encode(JSON.stringify(message)),
         { reliable: true },
       );
 
-      // Add message to local state
       setLocalMessages((prev) => [
         ...prev,
         {
@@ -163,7 +155,6 @@ export function ChatPanel({
       setMessageInput("");
     };
 
-    // Format timestamp for chat messages
     const formatTime = (date: Date): string => {
       return date.toLocaleTimeString([], {
         hour: "2-digit",
@@ -171,7 +162,6 @@ export function ChatPanel({
       });
     };
 
-    // Use absolute positioning for all internal elements to prevent growth
     return (
       <div
         className={`relative border-l border-gray-700 bg-gray-900 ${className}`}

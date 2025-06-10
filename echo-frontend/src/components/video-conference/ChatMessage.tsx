@@ -18,13 +18,18 @@ export function ChatMessage({
       }`}
     >
       <div className="flex items-center space-x-2">
-        <span className="text-xs text-gray-400">{message.sender}</span>
+        <span className="text-xs text-gray-400">
+          {message.sender}
+          {message.type === "transcription" && (
+            <span className="ml-2">(Transcription)</span>
+          )}
+        </span>
         <span className="text-xs text-gray-500">
           {formatTime(message.timestamp)}
         </span>
       </div>
       <div
-        className={`mt-1 max-w-[85%] rounded-lg px-4 py-3 ${
+        className={`mt-1 max-w-[85%] rounded-lg px-4 py-3 ${message.type === "transcription" ? "italic" : ""} ${
           message.sender === "You"
             ? "bg-blue-600 text-white"
             : "bg-gray-700 text-gray-100"
