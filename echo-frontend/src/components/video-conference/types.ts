@@ -22,4 +22,5 @@ export type ChatMessage = UserChatMessage | TranscriptionChatMessage;
 export interface ChatData {
   text: string;
   timestamp: string;
+  type: "chat" | "transcription";
 }

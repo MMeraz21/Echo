@@ -79,6 +79,19 @@ export function ChatPanel({
             "ChatPanel - Adding new transcription to messages:",
             lastTranscription,
           );
+
+          const message: ChatData = {
+            text: lastTranscription,
+            timestamp: new Date().toISOString(),
+            type: "transcription",
+          };
+
+          const encoder = new TextEncoder();
+          void room.localParticipant.publishData(
+            encoder.encode(JSON.stringify(message)),
+            { reliable: true },
+          );
+
           setLocalMessages((prev) => {
             const newMessage: TranscriptionChatMessage = {
               id: uuidv4().toString(),
@@ -100,20 +113,31 @@ export function ChatPanel({
       if (!room) return;
 
       const handleData = (payload: Uint8Array, participant?: Participant) => {
+        console.log("Data received from participant:", participant?.identity);
         const decoder = new TextDecoder();
-        const message = JSON.parse(decoder.decode(payload)) as ChatData;
+        const rawData = decoder.decode(payload);
+        console.log("Raw decoded data:", rawData);
 
-        setLocalMessages((prev) => [
-          ...prev,
-          {
-            id: uuidv4().toString(),
-            sender: participant?.identity ?? "Unknown",
-            text: message.text,
-            timestamp: new Date(message.timestamp),
-            type: "transcription",
-            translation: "",
-          },
-        ]);
+        try {
+          const message = JSON.parse(rawData) as ChatData;
+          console.log("Parsed message:", message);
+          console.log("Message type:", message.type);
+
+          setLocalMessages((prev) => {
+            const newMessage = {
+              id: uuidv4().toString(),
+              sender: participant?.identity ?? "Unknown",
+              text: message.text,
+              timestamp: new Date(message.timestamp),
+              type: message.type ?? "chat",
+              translation: "",
+            };
+            console.log("Creating new message with type:", newMessage.type);
+            return [...prev, newMessage];
+          });
+        } catch (error) {
+          console.error("Error parsing message:", error);
+        }
       };
 
       room.on("dataReceived", handleData);
@@ -128,7 +152,14 @@ export function ChatPanel({
     const chatEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      // Use requestAnimationFrame for more reliable scroll after DOM update
+      const raf = requestAnimationFrame(() => {
+        if (chatEndRef.current) {
+          console.log("Scrolling to bottom, messages:", displayMessages.length);
+          chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+      return () => cancelAnimationFrame(raf);
     }, [displayMessages]);
 
     const handleTranslate = async (messageId: string, message: string) => {
@@ -173,10 +204,13 @@ export function ChatPanel({
     const handleSendMessage = () => {
       if (!messageInput.trim() || !room) return;
 
-      const message = {
+      const message: ChatData = {
         text: messageInput.trim(),
         timestamp: new Date().toISOString(),
+        type: "chat",
       };
+
+      console.log("sending message with type:", message.type);
 
       const encoder = new TextEncoder(); //send message to livekit
       void room.localParticipant.publishData(
