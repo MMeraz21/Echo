@@ -13,6 +13,7 @@ export interface ChatPanelProps {
   onSendMessage?: (message: string) => void;
   messages?: ChatMessage[];
 }
+
 interface TranslationResponse {
   detectedLanguage: {
     language: string;
@@ -23,6 +24,18 @@ interface TranslationResponse {
     to: string;
   }[];
 }
+
+const SUPPORTED_LANGUAGES = [
+  { code: "en", name: "English", flag: "🇺🇸" },
+  { code: "es", name: "Spanish", flag: "🇪🇸" },
+  { code: "fr", name: "French", flag: "🇫🇷" },
+  { code: "de", name: "German", flag: "🇩🇪" },
+  { code: "it", name: "Italian", flag: "🇮🇹" },
+  { code: "ja", name: "Japanese", flag: "🇯🇵" },
+  { code: "ko", name: "Korean", flag: "🇰🇷" },
+  { code: "zh", name: "Chinese", flag: "🇨🇳" },
+] as const;
+
 /**
  * ChatPanel - A reusable chat component for video conferences
  */
@@ -36,6 +49,8 @@ export function ChatPanel({
 
   try {
     const [messageInput, setMessageInput] = useState(""); //chat input
+    const [targetLanguage, setTargetLanguage] = useState("en");
+
     console.log("ChatPanel - after useState");
 
     const room = useRoomContext();
@@ -124,7 +139,7 @@ export function ChatPanel({
 
       try {
         const response = await fetch(
-          `${endpoint}/translate?api-version=3.0&to=en`,
+          `${endpoint}/translate?api-version=3.0&to=${targetLanguage}`,
           {
             method: "POST",
             headers: {
@@ -201,13 +216,40 @@ export function ChatPanel({
         }}
       >
         {/* Header - fixed at top */}
-        <div className="absolute top-0 right-0 left-0 z-10 border-b border-gray-700 p-4">
-          <h2 className="text-lg font-semibold text-white">Chat</h2>
+        <div className="absolute top-0 right-0 left-0 z-10 border-b border-gray-700">
+          <div className="flex items-center gap-4 px-4 py-4">
+            <h2 className="text-lg font-semibold text-white">Chat</h2>
+            <div className="flex-1" />
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="language-select"
+                className="text-sm text-gray-400"
+              >
+                Translate to:
+              </label>
+              <select
+                id="language-select"
+                value={targetLanguage}
+                onChange={(e) => setTargetLanguage(e.target.value)}
+                className="rounded-lg border border-gray-600 bg-gray-800 px-2 py-1 text-sm text-white focus:border-blue-500 focus:outline-none"
+              >
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <option
+                    key={lang.code}
+                    value={lang.code}
+                    className="flex items-center gap-2"
+                  >
+                    {lang.flag} {lang.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Chat messages area - scrollable with absolute positioning */}
         <div className="absolute top-[60px] right-0 bottom-[72px] left-0 overflow-y-auto p-4">
-          <div className="flex flex-col space-y-4">
+          <div className="flex flex-col space-y-4 pt-2">
             {displayMessages.map((message) => (
               <ChatMessageComponent
                 key={message.id}
