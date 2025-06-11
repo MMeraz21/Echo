@@ -106,6 +106,10 @@ export function ChatPanel({
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [displayMessages]);
 
+    const handleTranslate = (message: string) => {
+      console.log("Translating message:", message);
+    };
+
     const handleSendMessage = () => {
       if (!messageInput.trim() || !room) return;
 
@@ -164,6 +168,7 @@ export function ChatPanel({
                 key={message.id}
                 message={message}
                 formatTime={formatTime}
+                handleTranslate={handleTranslate}
               />
             ))}
             <div ref={chatEndRef} />
