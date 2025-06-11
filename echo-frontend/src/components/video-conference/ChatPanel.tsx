@@ -5,6 +5,7 @@ import { DataPacket_Kind, Room, Participant } from "livekit-client";
 import { useTranscription } from "@/hooks/useTranscription";
 import { ChatMessage as ChatMessageComponent } from "./ChatMessage";
 import type { ChatMessage, ChatData, TranscriptionChatMessage } from "./types";
+import { v4 as uuidv4 } from "uuid";
 
 export interface ChatPanelProps {
   className?: string;
@@ -65,7 +66,7 @@ export function ChatPanel({
           );
           setLocalMessages((prev) => {
             const newMessage: TranscriptionChatMessage = {
-              id: Date.now().toString(),
+              id: uuidv4().toString(),
               sender: "You",
               text: lastTranscription,
               timestamp: new Date(),
@@ -90,7 +91,7 @@ export function ChatPanel({
         setLocalMessages((prev) => [
           ...prev,
           {
-            id: Date.now().toString(),
+            id: uuidv4().toString(),
             sender: participant?.identity ?? "Unknown",
             text: message.text,
             timestamp: new Date(message.timestamp),
@@ -115,7 +116,7 @@ export function ChatPanel({
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [displayMessages]);
 
-    const handleTranslate = async (message: string) => {
+    const handleTranslate = async (messageId: string, message: string) => {
       console.log("Translating message:", message);
       const endpoint = "https://api.cognitive.microsofttranslator.com";
       const key = process.env.NEXT_PUBLIC_TRANSLATOR_KEY;
@@ -141,6 +142,12 @@ export function ChatPanel({
         const detectedLanguage =
           data[0]?.detectedLanguage?.language ?? "unknown";
 
+        setLocalMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === messageId ? { ...msg, translation: translation } : msg,
+          ),
+        );
+
         console.log("Translation:", translation);
         console.log("Detected language:", detectedLanguage);
       } catch (error) {
@@ -165,7 +172,7 @@ export function ChatPanel({
       setLocalMessages((prev) => [
         ...prev,
         {
-          id: Date.now().toString(),
+          id: uuidv4().toString(),
           sender: "You",
           text: messageInput.trim(),
           timestamp: new Date(),
