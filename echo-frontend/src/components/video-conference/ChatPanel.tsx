@@ -12,7 +12,16 @@ export interface ChatPanelProps {
   onSendMessage?: (message: string) => void;
   messages?: ChatMessage[];
 }
-
+interface TranslationResponse {
+  detectedLanguage: {
+    language: string;
+    score: number;
+  };
+  translations: {
+    text: string;
+    to: string;
+  }[];
+}
 /**
  * ChatPanel - A reusable chat component for video conferences
  */
@@ -106,8 +115,37 @@ export function ChatPanel({
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [displayMessages]);
 
-    const handleTranslate = (message: string) => {
+    const handleTranslate = async (message: string) => {
       console.log("Translating message:", message);
+      const endpoint = "https://api.cognitive.microsofttranslator.com";
+      const key = process.env.NEXT_PUBLIC_TRANSLATOR_KEY;
+      const region = process.env.NEXT_PUBLIC_TRANSLATOR_REGION;
+
+      try {
+        const response = await fetch(
+          `${endpoint}/translate?api-version=3.0&to=en`,
+          {
+            method: "POST",
+            headers: {
+              "Ocp-Apim-Subscription-Key": key!,
+              "Ocp-Apim-Subscription-Region": region!,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify([{ Text: message }]),
+          },
+        );
+
+        const data = (await response.json()) as TranslationResponse[];
+        const translation =
+          data[0]?.translations?.[0]?.text ?? "Translation failed";
+        const detectedLanguage =
+          data[0]?.detectedLanguage?.language ?? "unknown";
+
+        console.log("Translation:", translation);
+        console.log("Detected language:", detectedLanguage);
+      } catch (error) {
+        console.error("Error translating message:", error);
+      }
     };
 
     const handleSendMessage = () => {
