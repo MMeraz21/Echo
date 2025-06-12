@@ -71,6 +71,16 @@ export function ChatPanel({
     ]);
     console.log("ChatPanel - after all hooks");
 
+    const chatEndRef = useRef<HTMLDivElement>(null);
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+    const forceScrollToBottom = () => {
+      if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop =
+          messagesContainerRef.current.scrollHeight;
+      }
+    };
+
     useEffect(() => {
       if (transcriptions.length > 0) {
         const lastTranscription = transcriptions[transcriptions.length - 1];
@@ -105,6 +115,8 @@ export function ChatPanel({
             console.log("ChatPanel - Adding message:", newMessage);
             return [...prev, newMessage];
           });
+
+          setTimeout(forceScrollToBottom, 100);
         }
       }
     }, [transcriptions]);
@@ -123,18 +135,21 @@ export function ChatPanel({
           console.log("Parsed message:", message);
           console.log("Message type:", message.type);
 
+          const newMessage = {
+            id: uuidv4().toString(),
+            sender: participant?.identity ?? "Unknown",
+            text: message.text,
+            timestamp: new Date(message.timestamp),
+            type: message.type ?? "chat",
+            translation: "",
+          };
+
           setLocalMessages((prev) => {
-            const newMessage = {
-              id: uuidv4().toString(),
-              sender: participant?.identity ?? "Unknown",
-              text: message.text,
-              timestamp: new Date(message.timestamp),
-              type: message.type ?? "chat",
-              translation: "",
-            };
             console.log("Creating new message with type:", newMessage.type);
             return [...prev, newMessage];
           });
+
+          setTimeout(forceScrollToBottom, 100);
         } catch (error) {
           console.error("Error parsing message:", error);
         }
@@ -148,8 +163,6 @@ export function ChatPanel({
     }, [room]);
 
     const displayMessages = messages.length > 0 ? messages : localMessages;
-
-    const chatEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
       // Use requestAnimationFrame for more reliable scroll after DOM update
@@ -182,7 +195,13 @@ export function ChatPanel({
           },
         );
 
-        const data = (await response.json()) as TranslationResponse[];
+        const responseData = await response.text(); // Read it once
+
+        if (!response.ok) {
+          throw new Error(responseData);
+        }
+
+        const data = JSON.parse(responseData) as TranslationResponse[];
         const translation =
           data[0]?.translations?.[0]?.text ?? "Translation failed";
         const detectedLanguage =
@@ -229,6 +248,7 @@ export function ChatPanel({
           translation: "",
         },
       ]);
+      setTimeout(forceScrollToBottom, 100);
 
       setMessageInput("");
     };
@@ -282,8 +302,11 @@ export function ChatPanel({
         </div>
 
         {/* Chat messages area - scrollable with absolute positioning */}
-        <div className="absolute top-[60px] right-0 bottom-[72px] left-0 overflow-y-auto p-4">
-          <div className="flex flex-col space-y-4 pt-2">
+        <div
+          ref={messagesContainerRef}
+          className="absolute top-[60px] right-0 bottom-[72px] left-0 min-h-0 overflow-y-auto"
+        >
+          <div className="flex flex-col space-y-4 p-4 pt-2">
             {displayMessages.map((message) => (
               <ChatMessageComponent
                 key={message.id}
