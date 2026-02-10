@@ -1,11 +1,4 @@
-import {
-  Calendar,
-  Home,
-  Inbox,
-  Search,
-  Settings,
-  VideoIcon,
-} from "lucide-react";
+import { Home, Inbox, Search, Settings, VideoIcon } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -17,7 +10,6 @@ import {
 const navItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Inbox", url: "#", icon: Inbox },
-  { title: "Calendar", url: "#", icon: Calendar },
   { title: "Video Chat", url: "/video-chat", icon: VideoIcon },
 ];
 
