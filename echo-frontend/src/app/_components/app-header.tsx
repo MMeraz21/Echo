@@ -24,9 +24,7 @@ export function AppHeader({ className }: AppHeaderProps) {
       };
     }
     if (pathname === "/inbox") return { pageTitle: "Inbox", lobbyId: null };
-    if (pathname === "/calendar")
-      return { pageTitle: "Calendar", lobbyId: null };
-    return { pageTitle: "Documents", lobbyId: null };
+    return { pageTitle: "Echo", lobbyId: null };
   }, [pathname]);
 
   return (
