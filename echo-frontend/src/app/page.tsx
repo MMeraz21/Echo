@@ -7,7 +7,9 @@ import {
   Zap,
   MessageSquare,
   Users,
+  LogIn,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import { auth } from "@/server/auth";
 
@@ -68,15 +70,21 @@ export default async function Home() {
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2 lg:justify-start">
             {quickActions.map((action) => (
-              <Link
-                key={action.title}
-                href={action.href}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors"
-              >
-                <action.icon className="h-4 w-4" />
-                {action.title}
-              </Link>
+              <Button key={action.title} asChild>
+                <Link href={action.href}>
+                  <action.icon className="h-4 w-4" />
+                  {action.title}
+                </Link>
+              </Button>
             ))}
+            {!userName && (
+              <Button variant="outline" asChild>
+                <Link href="/sign-in">
+                  <LogIn className="h-4 w-4" />
+                  Sign in
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </section>

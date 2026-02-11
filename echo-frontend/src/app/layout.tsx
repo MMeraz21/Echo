@@ -6,11 +6,11 @@ import { Geist } from "next/font/google";
 import { TRPCReactProvider } from "@/trpc/react";
 import {
   SidebarProvider,
-  SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "./_components/app-header";
+import { auth } from "@/server/auth";
 
 export const metadata: Metadata = {
   title: "Echo",
@@ -23,15 +23,24 @@ const geist = Geist({
   variable: "--font-geist-sans",
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const session = await auth();
+  const user = session?.user
+    ? {
+        name: session.user.name ?? "User",
+        email: session.user.email ?? "",
+        image: session.user.image ?? undefined,
+      }
+    : null;
+
   return (
     <html lang="en" className={`${geist.variable} dark`}>
       <body className="bg-sidebar flex min-h-screen text-white">
         <TRPCReactProvider>
           <SidebarProvider>
-            <AppSidebar variant="inset" />
+            <AppSidebar variant="inset" user={user} />
             <SidebarInset>
               {/* Main container with rounded border */}
               <div className="border-border bg-background flex h-full flex-col overflow-hidden rounded-xl border-l shadow-sm">

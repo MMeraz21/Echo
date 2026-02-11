@@ -7,15 +7,17 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { ArrowUpCircleIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 
 import { NavMain } from "./nav-main";
 import { NavSecondary } from "./nav-secondary";
+import { NavUser } from "./nav-user";
 
-type SidebarProps = ComponentProps<typeof Sidebar>;
+type SidebarProps = ComponentProps<typeof Sidebar> & {
+  user: { name: string; email: string; image?: string } | null;
+};
 
-export function AppSidebar(props: SidebarProps) {
+export function AppSidebar({ user, ...props }: SidebarProps) {
   return (
     <Sidebar
       collapsible="offcanvas"
@@ -29,8 +31,7 @@ export function AppSidebar(props: SidebarProps) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
-                {/* <ArrowUpCircleIcon className="h-5 w-5" /> */}
+              <a href="/">
                 <span className="text-base font-semibold">Echo</span>
               </a>
             </SidebarMenuButton>
@@ -45,7 +46,9 @@ export function AppSidebar(props: SidebarProps) {
         </div>
       </SidebarContent>
 
-      <SidebarFooter>{/* <NavUser /> */}</SidebarFooter>
+      <SidebarFooter>
+        <NavUser user={user} />
+      </SidebarFooter>
     </Sidebar>
   );
 }
